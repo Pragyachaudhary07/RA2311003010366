@@ -1,4 +1,4 @@
- # Notification System Design
+# Notification System Design
 
 ## Stage 1 – API Design
 
@@ -6,25 +6,37 @@ GET /notifications/:studentId
 POST /notifications  
 PATCH /notifications/:id  
 
-Used WebSockets for real-time notifications.
+Response:
+{
+  "notifications": [
+    {
+      "ID": "1",
+      "Type": "Result",
+      "Message": "mid-sem",
+      "Timestamp": "2026-04-22"
+    }
+  ]
+}
+
+Used WebSockets for real-time notifications instead of repeated polling.
 
 ---
 
 ## Stage 2 – Database Design
 
-Database: PostgreSQL
+Database: PostgreSQL  
 
-Table: notifications
+Table: notifications  
 
 Fields:
-- id
-- studentId
-- type
-- message
-- timestamp
-- isRead
+- id (Primary Key)  
+- studentId  
+- type (Event / Result / Placement)  
+- message  
+- timestamp  
+- isRead (boolean)  
 
-Use indexing and pagination for performance.
+Use indexing and pagination to handle large-scale data efficiently.
 
 ---
 
@@ -32,40 +44,47 @@ Use indexing and pagination for performance.
 
 Problem: Slow query due to full table scan.
 
-Solution:
-Create index on (studentId, isRead, timestamp)
+Example:
+SELECT * FROM notifications
+WHERE studentID = 1042 AND isRead = false
+ORDER BY createdAt DESC;
 
-Do not index every column as it slows writes.
+Solution:
+Create composite index on (studentId, isRead, timestamp)
+
+CREATE INDEX idx_notifications
+ON notifications(studentId, isRead, createdAt DESC);
+
+Do not index every column as it increases write overhead.
 
 ---
 
 ## Stage 4 – Performance Improvement
 
 Use:
-- Redis caching
-- Pagination
-- Lazy loading
-- WebSockets
+- Redis caching (reduce database load)  
+- Pagination (limit results)  
+- Lazy loading (load data when needed)  
+- WebSockets (real-time updates)  
 
 ---
 
 ## Stage 5 – Reliable System
 
-Problem: Loop-based email sending is slow.
+Problem: Loop-based email/notification sending is slow.
 
 Solution:
 Use message queue (RabbitMQ / Kafka)
 
 Benefits:
-- Async processing
-- Retry failed jobs
-- Better scalability
+- Async processing  
+- Retry failed jobs  
+- Better scalability and fault tolerance  
 
 ---
 
 ## Stage 6 – Code
 
-```js
 const axios = require("axios");
 
 const priorityMap = {
