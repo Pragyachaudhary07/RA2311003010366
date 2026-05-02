@@ -84,7 +84,6 @@ Benefits:
 ---
 
 ## Stage 6 – Code
-
 const axios = require("axios");
 
 const priorityMap = {
@@ -102,13 +101,20 @@ async function getTopNotifications() {
       }
     );
 
-    const data = res.data.notifications;
+    const data = (res.data && res.data.notifications) ? res.data.notifications : [];
 
     const sorted = data.sort((a, b) => {
-      if (priorityMap[b.Type] !== priorityMap[a.Type]) {
-        return priorityMap[b.Type] - priorityMap[a.Type];
+      const typeA = a.Type || a.type;
+      const typeB = b.Type || b.type;
+
+      if (priorityMap[typeB] !== priorityMap[typeA]) {
+        return (priorityMap[typeB] || 0) - (priorityMap[typeA] || 0);
       }
-      return new Date(b.Timestamp) - new Date(a.Timestamp);
+
+      const timeA = new Date(a.Timestamp || a.timestamp);
+      const timeB = new Date(b.Timestamp || b.timestamp);
+
+      return timeB - timeA;
     });
 
     const top10 = sorted.slice(0, 10);
