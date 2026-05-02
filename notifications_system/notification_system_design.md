@@ -1,23 +1,10 @@
-# Notification System Design
+ # Notification System Design
 
 ## Stage 1 – API Design
 
 GET /notifications/:studentId  
 POST /notifications  
 PATCH /notifications/:id  
-
-### Response
-```json
-{
-  "notifications": [
-    {
-      "ID": "1",
-      "Type": "Result",
-      "Message": "mid-sem",
-      "Timestamp": "2026-04-22"
-    }
-  ]
-}
 
 Used WebSockets for real-time notifications.
 
